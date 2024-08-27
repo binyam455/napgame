@@ -1,0 +1,232 @@
+<html>
+<head>
+  <title>NapGame - Normal</title>
+</head>
+
+<body>
+  <center>
+  <table>
+    <tr>
+      <td style="text-align: center">
+        <b>NapGame</b><br>
+        <i>Napoleon the Game!</i>
+      </td>
+    </tr>
+    <tr>
+      <td id="house_open">
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <center>
+        <table style="border-spacing: 30px; background: #7AB351">
+          <tr>
+            <script language="javascript">
+              for (let i=0; i < 7; i++)
+                document.write('<td style="text-align: center; font-weight: bold">' 
+                              + (i+1) + '<br><br><img id="crdimg-0_' + i + 
+                              '" ondragstart="dragged_id=this.id;dragged_id2=\'\';" draggable="true"></td>');
+            </script>
+          </tr> 
+        </table>
+        </center>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <center>
+        <table style="border-spacing: 30px">
+          <tr>
+            <script language="javascript">
+              for (let i=0; i < 8; i++)
+                document.write('<td id="t' + i + '"><img id="crdimg-1_' + i + '" src="images/emptycrd.png"  ondrop="dropCard(this.id)" ondragover="allowDrop(event)"></td>');
+            </script>
+          </tr>
+          <tr>
+            <td style="text-align: center; font-weight: bold; background: #00A2E8" colspan="4">
+              Ascending
+            </td>
+            <td style="text-align: center; font-weight: bold;  background: #E16048" colspan="4">
+              Descending
+            </td>
+          </tr>       
+        </table>
+        </center>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <center>
+        <table style="border-spacing: 30px; background: #7AB351">
+          <tr>
+            <script language="javascript">
+              for (let i=0; i < 7; i++) {
+                let indx;
+                if (i < 3)
+                  indx = i + 8;
+                else if (i > 3)
+                  indx = i + 7;
+                else
+                  indx = "";
+
+                document.write('<td style="text-align: center"><img id="crdimg-2_' + i + '"><br><br><b>' + indx +'</b></td>');
+              }
+            </script>
+          </tr>
+        </table>
+        </center>
+    </tr>
+  </table>
+  </center>
+
+  <script language="javascript">
+    let house_stk = new Array(13)
+    let fill_stk = new Array(8);
+    let pick_stk = new Array();
+    let cards = new Array(104);
+    let cards_flg = new Array(4);
+    let cards_sgn = new Array(4);
+    let cards_top = new Array(13);
+    let dragged_id = "";
+    let dragged_id2 = "";
+    let target_id = "";
+
+    function openHouse() {
+      let picked_crd = pick_stk.pop();
+      let pk_ary = picked_crd.split("_");
+      let open_house_str = '<center><table>' +
+                           '<tr><td colspan="' + house_stk[pk_ary[1]].length + '">' +
+                           '<center><table style="border-radius: 100%; border: 2px solid #000000" ' +
+                           '<tr><td style="text-align: center; font-weight: bold">&nbsp;' +  (1 * pk_ary[1] + 1) + 
+                           '&nbsp;</td></tr></table></center></td></tr><tr>' +
+                           '<td><center><table style="border-radius: 20px; border: 2px solid #000000"><tr>';
+      house_stk[pk_ary[1]].unshift(picked_crd);
+      for (let i=0; i < house_stk[pk_ary[1]].length; i++)
+        open_house_str += '<td style="padding: 20px; text-align: center"><img id="crdimg-00_' + i + 
+                          '" src="' + getImgPath(house_stk[pk_ary[1]][i]) + 
+                          '" ondragstart="dragged_id2=this.id;dragged_id=\'\';" draggable="true"></td>';
+
+      document.getElementById("house_open").innerHTML = open_house_str + "</tr></table></center></td></tr></table></center>";
+
+      document.getElementById("crdimg-2_3").style.border = "5px solid #0000FF";
+      setTimeout('document.getElementById("crdimg-2_3").style.border = "0px";', 100)
+      window.scroll(0,0);
+    }
+
+    function dropCard(trgt_id) {
+      target_id = trgt_id;
+      let id_ary = dragged_id.split("-")[1].split("_");
+      if (house_stk[id_ary[1]].length == 0) {
+        document.getElementById(dragged_id).src = "images/emptycrd.png";
+      }
+      else {
+        document.getElementById(target_id).src = document.getElementById(dragged_id).src;
+        house_stk[id_ary[1]].pop(); 
+        if (house_stk[id_ary[1]].length)
+          document.getElementById(dragged_id).src = getImgPath(house_stk[id_ary[1]][house_stk[id_ary[1]].length - 1]);
+      }
+
+      document.getElementById(target_id).style.border = "5px solid #0000FF";
+      setTimeout('document.getElementById(target_id).style.border = "0px";', 200)
+    }
+
+    function allowDrop(ev) {
+     ev.preventDefault();
+    }
+    
+    function getImgPath(crd_str) {
+      let crd_ary = crd_str.split("_");
+      return "images/" + cards_sgn[crd_ary[0]] + "s" + "/" + cards_sgn[crd_ary[0]] + (1 * crd_ary[1] + 1) + ".png";
+    }
+
+    function shuffleCards() {
+      for (let i=0; i < 104; i++)
+        cards[i] = "";
+
+      for (let i=0; i < 4; i++) {
+        for (let j=0; j < 13; j++)
+            cards_flg[i][j] = 0;
+      }
+
+      let crd_count=0;
+      while (crd_count < 104) {
+        let sgn = Math.floor(Math.random() * 4);
+        let num = Math.floor(Math.random() * 13);
+
+        if (cards_flg[sgn][num] != 2) {
+          cards[crd_count] = sgn + "_" + num;
+          cards_flg[sgn][num]++;
+          crd_count++;
+        }
+      }  
+    }
+
+    function distCards() {
+      let i=0, j;
+      while (true) {
+        for (j=0; j < 13; j++) {
+          house_stk[j].push(cards[i]);
+          cards_top[j] = cards[i];
+          let crd_ary = cards[i].split("_"); 
+          if (crd_ary[1] == 0 || j == crd_ary[1]) {
+            i++;
+            pick_stk.push(cards[i]);
+            i++;
+            pick_stk.push(cards[i])
+          } 
+          if (j == 6 || j == 9 || j == 12) {
+            i++;
+            pick_stk.push(cards[i]);
+          }
+          i++;
+          if (i >= 104)
+            break;
+        }
+        if (i >= 104)
+          break;
+      }
+
+      for (let i=0; i < 7; i++)
+        document.getElementById("crdimg-0_" + i).src = getImgPath(cards_top[i]);
+      
+      for (let i=0; i < 3; i++) 
+        document.getElementById("crdimg-2_" + i).src = getImgPath(cards_top[i+7]);
+      
+      for (let i=4; i < 7; i++) 
+        document.getElementById("crdimg-2_" + i).src = getImgPath(cards_top[i+6]);
+    }
+
+    function initGame() {
+      for (let i=0; i < 13; i++)
+        house_stk[i] = new Array();
+    
+      for (let i=0; i < 8; i++)
+        fill_stk[i] = new Array();
+    
+      for (let i=0; i < 4; i++)
+        cards_flg[i] = new Array(13);
+      
+      for (let i=0; i < 4; i++) {
+        for (let j=0; j < 13; j++)
+          cards_flg[i][j] = 0;
+      }
+      
+      cards_sgn[0] = "club";
+      cards_sgn[1] = "diamond";
+      cards_sgn[2] = "heart";
+      cards_sgn[3] = "spade";
+
+      shuffleCards();
+      distCards();
+    }
+
+    window.onmouseup = function() { dragged_id= ""; dragged_id2=""; };
+    document.getElementById("crdimg-2_3").src = "images/backcrd.png";
+    document.getElementById("crdimg-2_3").onclick = function() { openHouse(); };
+
+    initGame();
+
+    </script>
+
+</body>
+</html>
